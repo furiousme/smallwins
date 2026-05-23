@@ -4,9 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { themes } from "@/lib/themes/config";
 import { exportLocalData, importLocalData } from "@/lib/db/backup";
+import { getSettings, updateReminderSettings } from "@/lib/db/settings";
 import { getDailyTarget, upsertDailyTarget } from "@/lib/db/targets";
 import { useDexieLiveQuery } from "@/lib/hooks/useDexieLiveQuery";
+import { getNotificationStatus, requestNotificationPermission } from "@/lib/notifications/browserNotifications";
 import { NumericInput } from "@/components/ui/NumericInput";
+import type { ReminderSettings } from "@/types/models";
 
 interface SettingsScreenProps {
   themeId: string;
@@ -16,14 +19,24 @@ interface SettingsScreenProps {
 
 export function SettingsScreen({ themeId, onThemeChange, onLogout }: SettingsScreenProps) {
   const targetQuery = useCallback(() => getDailyTarget(), []);
+  const settingsQuery = useCallback(() => getSettings(), []);
   const { value: target } = useDexieLiveQuery(targetQuery, undefined);
+  const { value: settings } = useDexieLiveQuery(settingsQuery, undefined);
   const [targetForm, setTargetForm] = useState({
     calories: 0,
     protein: 0,
     fat: 0,
     carbs: 0,
   });
+  const [reminderForm, setReminderForm] = useState<ReminderSettings>({
+    enabled: false,
+    breakfastTime: "09:00",
+    lunchTime: "14:00",
+    dinnerTime: "19:00",
+  });
+  const [notificationStatus, setNotificationStatus] = useState(() => getNotificationStatus());
   const [saveMessage, setSaveMessage] = useState("");
+  const [reminderMessage, setReminderMessage] = useState("");
   const [backupMessage, setBackupMessage] = useState("");
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -40,6 +53,12 @@ export function SettingsScreen({ themeId, onThemeChange, onLogout }: SettingsScr
     });
   }, [target]);
 
+  useEffect(() => {
+    if (settings?.reminders) {
+      setReminderForm(settings.reminders);
+    }
+  }, [settings]);
+
   function updateTargetField(field: keyof typeof targetForm, value: string) {
     setSaveMessage("");
     const parsed = Number(value);
@@ -53,6 +72,43 @@ export function SettingsScreen({ themeId, onThemeChange, onLogout }: SettingsScr
     event.preventDefault();
     await upsertDailyTarget(targetForm);
     setSaveMessage("Цілі збережено");
+  }
+
+  async function saveReminderSettings(nextSettings: ReminderSettings, message = "Нагадування оновлено") {
+    setReminderForm(nextSettings);
+    await updateReminderSettings(nextSettings);
+    setReminderMessage(message);
+  }
+
+  async function handleReminderToggle(enabled: boolean) {
+    if (!enabled) {
+      await saveReminderSettings({ ...reminderForm, enabled: false }, "Нагадування вимкнено.");
+      return;
+    }
+
+    const permission = await requestNotificationPermission();
+    setNotificationStatus(permission);
+
+    if (permission === "granted") {
+      await saveReminderSettings({ ...reminderForm, enabled: true }, "Ніжні нагадування увімкнено.");
+      return;
+    }
+
+    if (permission === "denied") {
+      await saveReminderSettings({ ...reminderForm, enabled: false }, "Сповіщення вимкнені в браузері або системі.");
+      return;
+    }
+
+    if (permission === "unsupported") {
+      await saveReminderSettings({ ...reminderForm, enabled: false }, "Цей браузер поки не підтримує локальні сповіщення.");
+      return;
+    }
+
+    await saveReminderSettings({ ...reminderForm, enabled: false }, "Можеш увімкнути дозвіл на сповіщення пізніше.");
+  }
+
+  async function updateReminderTime(field: keyof Omit<ReminderSettings, "enabled">, value: string) {
+    await saveReminderSettings({ ...reminderForm, [field]: value }, "Час нагадування збережено.");
   }
 
   async function handleExport() {
@@ -149,6 +205,50 @@ export function SettingsScreen({ themeId, onThemeChange, onLogout }: SettingsScr
             {saveMessage}
           </p>
         </form>
+      </section>
+
+      <section className="card settings-section reminders-section">
+        <div className="section-heading">
+          <h2>Нагадування</h2>
+          <span>{reminderForm.enabled ? "Увімкнено" : "Вимкнено"}</span>
+        </div>
+        <p>Нагадування допоможуть не забувати логувати прийоми їжі.</p>
+
+        <label className="settings-toggle">
+          <span>
+            <strong>Локальні сповіщення</strong>
+            <small>
+              {notificationStatus === "denied"
+                ? "Дозвіл вимкнено у браузері або системі."
+                : "Працюють тихо, без зайвого тиску."}
+            </small>
+          </span>
+          <input
+            type="checkbox"
+            checked={reminderForm.enabled}
+            onChange={(event) => void handleReminderToggle(event.target.checked)}
+          />
+          <i aria-hidden="true" />
+        </label>
+
+        <div className="reminder-time-list">
+          <label>
+            <span>Сніданок</span>
+            <input type="time" value={reminderForm.breakfastTime} onChange={(event) => void updateReminderTime("breakfastTime", event.target.value)} />
+          </label>
+          <label>
+            <span>Обід</span>
+            <input type="time" value={reminderForm.lunchTime} onChange={(event) => void updateReminderTime("lunchTime", event.target.value)} />
+          </label>
+          <label>
+            <span>Вечеря</span>
+            <input type="time" value={reminderForm.dinnerTime} onChange={(event) => void updateReminderTime("dinnerTime", event.target.value)} />
+          </label>
+        </div>
+
+        <p className="save-message" aria-live="polite">
+          {reminderMessage}
+        </p>
       </section>
 
       <section className="soft-card settings-section compact">

@@ -6,6 +6,7 @@ import { BottomNavigation, type AppTab } from "@/components/layout/BottomNavigat
 import { DashboardScreen } from "@/components/dashboard/DashboardScreen";
 import { FoodsScreen } from "@/components/foods/FoodsScreen";
 import { SettingsScreen } from "@/components/settings/SettingsScreen";
+import { ReminderScheduler } from "@/components/reminders/ReminderScheduler";
 import { createAuthSession, getValidAuthSession, clearAuthSession } from "@/lib/auth/session";
 import { registerServiceWorker } from "@/lib/pwa/registerServiceWorker";
 import { getSettings, updateTheme } from "@/lib/db/settings";
@@ -87,6 +88,7 @@ export function SmallWinsApp() {
 
   return (
     <main className="app-shell">
+      <ReminderScheduler />
       {activeTab === "today" ? <DashboardScreen /> : null}
       {activeTab === "foods" ? <FoodsScreen /> : null}
       {activeTab === "settings" ? (

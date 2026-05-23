@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { QuickAddSheet } from "@/components/dashboard/QuickAddSheet";
 import { QuoteCard } from "@/components/dashboard/QuoteCard";
+import { ProteinAwarenessCard } from "@/components/dashboard/ProteinAwarenessCard";
 import { NumericInput } from "@/components/ui/NumericInput";
 import {
   deleteMealEntry,
@@ -120,6 +121,8 @@ export function DashboardScreen() {
           </article>
         ))}
       </div>
+
+      <ProteinAwarenessCard totals={totals} target={target} />
 
       <button className="primary-button" type="button" onClick={() => setIsQuickAddOpen(true)}>
         + Додати їжу

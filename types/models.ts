@@ -2,6 +2,13 @@ export type ServingType = "per_100g" | "per_piece";
 export type MealType = "breakfast" | "lunch" | "dinner" | "snack" | "other";
 export type Language = "uk";
 
+export interface ReminderSettings {
+  enabled: boolean;
+  breakfastTime: string;
+  lunchTime: string;
+  dinnerTime: string;
+}
+
 export interface Food {
   id?: number;
   name: string;
@@ -51,6 +58,7 @@ export interface Settings {
   id: "app";
   themeId: string;
   language: Language;
+  reminders: ReminderSettings;
   updatedAt: string;
 }
 

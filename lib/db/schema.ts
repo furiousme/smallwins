@@ -9,7 +9,7 @@ export class SmallWinsDatabase extends Dexie {
   authSession!: Table<AuthSession, "current">;
 
   constructor() {
-    super("smallWinsDatabase");
+    super("smallWinsLocalDatabase");
 
     this.version(1).stores({
       foods: "++id, name, createdAt, updatedAt",
@@ -18,6 +18,23 @@ export class SmallWinsDatabase extends Dexie {
       settings: "id, themeId, updatedAt",
       authSession: "id, token, expiresAt, createdAt",
     });
+
+    this.version(2).stores({
+      foods: "++id, name, createdAt, updatedAt",
+      mealEntries: "++id, date, mealType, foodId, createdAt",
+      dailyTargets: "++id, updatedAt",
+      settings: "id, themeId, updatedAt",
+      authSession: "id, token, expiresAt, createdAt",
+    });
+
+    this.version(3).stores({
+      foods: "++id, name, createdAt, updatedAt",
+      mealEntries: "++id, date, mealType, foodId, createdAt",
+      dailyTargets: "++id, updatedAt",
+      settings: "id, themeId, updatedAt",
+      authSession: "id, token, expiresAt, createdAt",
+    });
+
   }
 }
 

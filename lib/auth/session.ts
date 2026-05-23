@@ -1,4 +1,5 @@
-import { db } from "@/lib/db/schema";
+import { fallbackStorage } from "@/lib/db/localFallback";
+import { hasIndexedDB } from "@/lib/db/support";
 import { SESSION_DAYS } from "@/lib/auth/config";
 import type { AuthSession } from "@/types/models";
 
@@ -27,12 +28,18 @@ export async function createAuthSession(): Promise<AuthSession> {
     expiresAt: addDays(now, SESSION_DAYS).toISOString(),
   };
 
-  await db.authSession.put(session);
+  if (hasIndexedDB()) {
+    const { db } = await import("@/lib/db/schema");
+    await db.authSession.put(session);
+  } else {
+    fallbackStorage.setSession(session);
+  }
+
   return session;
 }
 
 export async function getValidAuthSession(): Promise<AuthSession | null> {
-  const session = await db.authSession.get(SESSION_ID);
+  const session = hasIndexedDB() ? await (await import("@/lib/db/schema")).db.authSession.get(SESSION_ID) : fallbackStorage.getSession();
 
   if (!session) {
     return null;
@@ -47,5 +54,10 @@ export async function getValidAuthSession(): Promise<AuthSession | null> {
 }
 
 export async function clearAuthSession() {
-  await db.authSession.delete(SESSION_ID);
+  if (hasIndexedDB()) {
+    const { db } = await import("@/lib/db/schema");
+    await db.authSession.delete(SESSION_ID);
+  } else {
+    fallbackStorage.clearSession();
+  }
 }

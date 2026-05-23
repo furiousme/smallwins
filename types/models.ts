@@ -19,6 +19,7 @@ export interface MealEntry {
   foodId?: number;
   foodName: string;
   amount: number;
+  servingType?: ServingType;
   mealType: MealType;
   date: string;
   calories: number;
@@ -35,6 +36,13 @@ export interface DailyTarget {
   fat: number;
   carbs: number;
   updatedAt: string;
+}
+
+export interface NutritionTotals {
+  calories: number;
+  protein: number;
+  fat: number;
+  carbs: number;
 }
 
 export interface Settings {

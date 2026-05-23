@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { LOCAL_PIN, PIN_LENGTH } from "@/lib/auth/config";
 
 interface AuthGateProps {
@@ -28,20 +28,22 @@ export function AuthGate({ onUnlock }: AuthGateProps) {
     window.setTimeout(() => setIsShaking(false), 520);
   }, [onUnlock]);
 
-  useEffect(() => {
-    if (pin.length !== PIN_LENGTH) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      void submit(pin);
-    }, 120);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [pin, submit]);
-
   function handleDigit(digit: string) {
-    setPin((value) => (value.length >= PIN_LENGTH ? value : `${value}${digit}`));
+    setPin((value) => {
+      if (value.length >= PIN_LENGTH) {
+        return value;
+      }
+
+      const nextPin = `${value}${digit}`;
+
+      if (nextPin.length === PIN_LENGTH) {
+        window.setTimeout(() => {
+          void submit(nextPin);
+        }, 120);
+      }
+
+      return nextPin;
+    });
     setError("");
   }
 

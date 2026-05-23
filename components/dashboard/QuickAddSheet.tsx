@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { createMealEntry, getRecentFoods } from "@/lib/db/mealEntries";
-import { getFoods } from "@/lib/db/foods";
+import { getFoods, getFrequentFoods } from "@/lib/db/foods";
 import { amountUnit, mealTypeLabels, servingTypeLabel } from "@/lib/nutrition/format";
 import { useDexieLiveQuery } from "@/lib/hooks/useDexieLiveQuery";
 import type { Food, MealType } from "@/types/models";
@@ -26,18 +26,19 @@ export function QuickAddSheet({ onClose }: QuickAddSheetProps) {
   const [isSaving, setIsSaving] = useState(false);
   const foodsQuery = useCallback(() => getFoods(), []);
   const recentQuery = useCallback(() => getRecentFoods(), []);
+  const frequentQuery = useCallback(() => getFrequentFoods(), []);
   const { value: foods } = useDexieLiveQuery(foodsQuery, []);
   const { value: recentFoods } = useDexieLiveQuery(recentQuery, []);
+  const { value: frequentFoods } = useDexieLiveQuery(frequentQuery, []);
   const filteredFoods = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("uk");
-    const source = normalizedQuery ? foods : recentFoods.length ? recentFoods : foods.slice(0, 6);
 
     if (!normalizedQuery) {
-      return source;
+      return foods.slice(0, 6);
     }
 
     return foods.filter((food) => food.name.toLocaleLowerCase("uk").includes(normalizedQuery));
-  }, [foods, query, recentFoods]);
+  }, [foods, query]);
 
   function selectFood(food: Food) {
     setSelectedFood(food);
@@ -64,10 +65,12 @@ export function QuickAddSheet({ onClose }: QuickAddSheetProps) {
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Знайти страву" type="search" autoFocus />
           </label>
 
-          <div className="quick-section-title">{query ? "Результати" : "Нещодавні"}</div>
-          {filteredFoods.length === 0 ? (
+          {query ? <div className="quick-section-title">Результати</div> : null}
+          {query && filteredFoods.length === 0 ? (
             <div className="sheet-empty">Поки немає страв для швидкого додавання.</div>
-          ) : (
+          ) : null}
+
+          {query ? (
             <div className="quick-food-list">
               {filteredFoods.map((food) => (
                 <button key={food.id} type="button" className="quick-food-option" onClick={() => selectFood(food)}>
@@ -79,6 +82,39 @@ export function QuickAddSheet({ onClose }: QuickAddSheetProps) {
                 </button>
               ))}
             </div>
+          ) : (
+            <>
+              {frequentFoods.length ? (
+                <>
+                  <div className="quick-section-title">Часто додаєш</div>
+                  <div className="quick-chip-scroll">
+                    {frequentFoods.map((food) => (
+                      <button key={food.id} type="button" className="quick-chip-card" onClick={() => selectFood(food)}>
+                        <strong>{food.name}</strong>
+                        <span>{food.usageCount ?? 0} разів</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+
+              <div className="quick-section-title">Нещодавно</div>
+              {(recentFoods.length ? recentFoods : filteredFoods).length === 0 ? (
+                <div className="sheet-empty">Поки немає страв для швидкого додавання.</div>
+              ) : (
+                <div className="quick-food-list">
+                  {(recentFoods.length ? recentFoods : filteredFoods).map((food) => (
+                    <button key={food.id} type="button" className="quick-food-option" onClick={() => selectFood(food)}>
+                      <span>
+                        <strong>{food.name}</strong>
+                        <small>{servingTypeLabel(food.servingType)}</small>
+                      </span>
+                      <em>{food.calories} ккал</em>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       ) : (

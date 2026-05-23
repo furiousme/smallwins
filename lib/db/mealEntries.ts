@@ -1,5 +1,6 @@
 import { fallbackStorage } from "@/lib/db/localFallback";
 import { hasIndexedDB } from "@/lib/db/support";
+import { touchFoodUsage } from "@/lib/db/foods";
 import { calculateEntryNutrition } from "@/lib/nutrition/calc";
 import { todayKey } from "@/lib/nutrition/date";
 import type { Food, MealEntry, MealType, NutritionTotals } from "@/types/models";
@@ -13,7 +14,11 @@ export interface MealEntryInput {
 
 export async function createMealEntry(input: MealEntryInput) {
   if (!hasIndexedDB()) {
-    return fallbackStorage.createEntry(input.food, Math.max(0, input.amount), input.mealType);
+    const id = fallbackStorage.createEntry(input.food, Math.max(0, input.amount), input.mealType, input.date);
+    if (input.food.id) {
+      fallbackStorage.touchFoodUsage(input.food.id);
+    }
+    return id;
   }
 
   const amount = Math.max(0, input.amount);
@@ -30,7 +35,13 @@ export async function createMealEntry(input: MealEntryInput) {
     createdAt: new Date().toISOString(),
   };
 
-  return db.mealEntries.add(entry);
+  const id = await db.mealEntries.add(entry);
+
+  if (input.food.id) {
+    await touchFoodUsage(input.food.id);
+  }
+
+  return id;
 }
 
 export async function updateMealEntryAmount(entry: MealEntry, amount: number) {
@@ -88,6 +99,45 @@ export async function getRecentFoods(limit = 6) {
   const foods = await Promise.all(foodIds.slice(0, limit).map((id) => db.foods.get(id)));
 
   return foods.filter((food): food is Food => Boolean(food));
+}
+
+export async function duplicateMealEntry(entry: MealEntry, date = todayKey()) {
+  const duplicated: MealEntry = {
+    ...entry,
+    id: undefined,
+    date,
+    createdAt: new Date().toISOString(),
+  };
+
+  if (!hasIndexedDB()) {
+    return fallbackStorage.addEntrySnapshot(duplicated);
+  }
+
+  const { db } = await import("@/lib/db/schema");
+  return db.mealEntries.add(duplicated);
+}
+
+export async function duplicateMeal(mealType: MealType, sourceDate = todayKey(), targetDate = todayKey()) {
+  const entries = (await getTodayEntries(sourceDate)).filter((entry) => entry.mealType === mealType);
+
+  for (const entry of entries) {
+    await duplicateMealEntry(entry, targetDate);
+  }
+
+  return entries.length;
+}
+
+export async function duplicateYesterday() {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const entries = await getTodayEntries(todayKey(yesterday));
+
+  for (const entry of entries) {
+    await duplicateMealEntry(entry);
+  }
+
+  return entries.length;
 }
 
 export function getTotals(entries: MealEntry[]): NutritionTotals {

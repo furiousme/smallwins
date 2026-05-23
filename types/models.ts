@@ -10,6 +10,8 @@ export interface Food {
   fat: number;
   carbs: number;
   servingType: ServingType;
+  usageCount?: number;
+  lastUsedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

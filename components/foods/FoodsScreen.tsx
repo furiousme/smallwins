@@ -1,14 +1,17 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { FoodDetailsSheet } from "@/components/foods/FoodDetailsSheet";
 import { FoodFormSheet } from "@/components/foods/FoodFormSheet";
 import { getFoods } from "@/lib/db/foods";
 import { servingTypeLabel } from "@/lib/nutrition/format";
 import { useDexieLiveQuery } from "@/lib/hooks/useDexieLiveQuery";
+import type { Food } from "@/types/models";
 
 export function FoodsScreen() {
   const [query, setQuery] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const foodQuery = useCallback(() => getFoods(), []);
   const { value: foods, isLoading } = useDexieLiveQuery(foodQuery, []);
   const filteredFoods = useMemo(() => {
@@ -47,16 +50,19 @@ export function FoodsScreen() {
 
       <div className="food-list">
         {filteredFoods.map((food) => (
-          <article key={food.id} className="soft-card food-card">
+          <button key={food.id} type="button" className="soft-card food-card food-card-button" onClick={() => setSelectedFood(food)}>
             <div>
               <h2>{food.name}</h2>
-              <span>{servingTypeLabel(food.servingType)}</span>
+              <span>
+                {servingTypeLabel(food.servingType)}
+                {(food.usageCount ?? 0) > 0 ? ` · ${food.usageCount} разів` : ""}
+              </span>
             </div>
             <strong>{food.calories} ккал</strong>
             <p>
               Б {food.protein} г · Ж {food.fat} г · В {food.carbs} г
             </p>
-          </article>
+          </button>
         ))}
       </div>
 
@@ -65,6 +71,7 @@ export function FoodsScreen() {
       </button>
 
       {isCreating ? <FoodFormSheet onClose={() => setIsCreating(false)} /> : null}
+      {selectedFood ? <FoodDetailsSheet food={selectedFood} onClose={() => setSelectedFood(null)} /> : null}
     </section>
   );
 }

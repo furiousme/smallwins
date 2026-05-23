@@ -35,6 +35,13 @@ export class SmallWinsDatabase extends Dexie {
       authSession: "id, token, expiresAt, createdAt",
     });
 
+    this.version(4).stores({
+      foods: "++id, name, usageCount, lastUsedAt, createdAt, updatedAt",
+      mealEntries: "++id, date, mealType, foodId, createdAt",
+      dailyTargets: "++id, updatedAt",
+      settings: "id, themeId, updatedAt",
+      authSession: "id, token, expiresAt, createdAt",
+    });
   }
 }
 

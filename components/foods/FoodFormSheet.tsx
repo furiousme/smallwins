@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { createFood, type FoodInput } from "@/lib/db/foods";
-import type { ServingType } from "@/types/models";
+import { createFood, updateFood, type FoodInput } from "@/lib/db/foods";
+import type { Food, ServingType } from "@/types/models";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 
 interface FoodFormSheetProps {
+  food?: Food;
   onClose: () => void;
 }
 
@@ -24,8 +25,19 @@ function parseNumber(value: string) {
   return Number.isFinite(parsed) ? parsed : Number.NaN;
 }
 
-export function FoodFormSheet({ onClose }: FoodFormSheetProps) {
-  const [form, setForm] = useState({ ...initialForm });
+export function FoodFormSheet({ food, onClose }: FoodFormSheetProps) {
+  const [form, setForm] = useState<FoodInput>(
+    food
+      ? {
+          name: food.name,
+          calories: food.calories,
+          protein: food.protein,
+          fat: food.fat,
+          carbs: food.carbs,
+          servingType: food.servingType,
+        }
+      : { ...initialForm },
+  );
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -53,13 +65,17 @@ export function FoodFormSheet({ onClose }: FoodFormSheetProps) {
     }
 
     setIsSaving(true);
-    await createFood(form);
+    if (food?.id) {
+      await updateFood(food.id, form);
+    } else {
+      await createFood(form);
+    }
     setIsSaving(false);
     onClose();
   }
 
   return (
-    <BottomSheet title="Нова страва" onClose={onClose}>
+    <BottomSheet title={food ? "Редагувати страву" : "Нова страва"} onClose={onClose}>
       <form className="food-form" onSubmit={(event) => void handleSubmit(event)}>
         <label className="form-field">
           <span>Назва страви</span>

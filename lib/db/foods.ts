@@ -33,6 +33,7 @@ export async function createFood(input: FoodInput) {
 
   return db.foods.add({
     ...food,
+    usageCount: 0,
     createdAt: now,
     updatedAt: now,
   });
@@ -40,6 +41,7 @@ export async function createFood(input: FoodInput) {
 
 export async function updateFood(id: number, input: FoodInput) {
   if (!hasIndexedDB()) {
+    fallbackStorage.updateFood(id, normalizeFoodInput(input));
     return;
   }
 
@@ -54,11 +56,43 @@ export async function updateFood(id: number, input: FoodInput) {
 
 export async function deleteFood(id: number) {
   if (!hasIndexedDB()) {
+    fallbackStorage.deleteFood(id);
     return;
   }
 
   const { db } = await import("@/lib/db/schema");
   await db.foods.delete(id);
+}
+
+export async function touchFoodUsage(foodId: number) {
+  if (!hasIndexedDB()) {
+    fallbackStorage.touchFoodUsage(foodId);
+    return;
+  }
+
+  const { db } = await import("@/lib/db/schema");
+  const food = await db.foods.get(foodId);
+
+  if (!food) {
+    return;
+  }
+
+  await db.foods.update(foodId, {
+    usageCount: (food.usageCount ?? 0) + 1,
+    lastUsedAt: new Date().toISOString(),
+  });
+}
+
+export async function getFrequentFoods(limit = 6) {
+  const foods = await getFoods();
+
+  return foods
+    .filter((food) => (food.usageCount ?? 0) > 0)
+    .sort((a, b) => {
+      const usageDiff = (b.usageCount ?? 0) - (a.usageCount ?? 0);
+      return usageDiff || (b.lastUsedAt ?? "").localeCompare(a.lastUsedAt ?? "");
+    })
+    .slice(0, limit);
 }
 
 export async function getFoods() {

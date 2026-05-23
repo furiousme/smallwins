@@ -2,7 +2,15 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { QuickAddSheet } from "@/components/dashboard/QuickAddSheet";
-import { deleteMealEntry, getTodayEntries, getTotals, updateMealEntryAmount } from "@/lib/db/mealEntries";
+import {
+  deleteMealEntry,
+  duplicateMeal,
+  duplicateMealEntry,
+  duplicateYesterday,
+  getTodayEntries,
+  getTotals,
+  updateMealEntryAmount,
+} from "@/lib/db/mealEntries";
 import { getDailyTarget } from "@/lib/db/targets";
 import { amountUnit, clampPercent, formatAmount, formatMacro, formatNumber, mealTypeLabels, visibleMealTypes } from "@/lib/nutrition/format";
 import { useDexieLiveQuery } from "@/lib/hooks/useDexieLiveQuery";
@@ -11,6 +19,8 @@ import type { MealEntry, MealType } from "@/types/models";
 export function DashboardScreen() {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [editingEntryId, setEditingEntryId] = useState<number | null>(null);
+  const [collapsedMeals, setCollapsedMeals] = useState<MealType[]>([]);
+  const [repeatMessage, setRepeatMessage] = useState("");
   const entriesQuery = useCallback(() => getTodayEntries(), []);
   const targetQuery = useCallback(() => getDailyTarget(), []);
   const { value: entries } = useDexieLiveQuery(entriesQuery, []);
@@ -33,15 +43,45 @@ export function DashboardScreen() {
     { label: "Жири", value: totals.fat, target: target?.fat ?? 0 },
     { label: "Вуглеводи", value: totals.carbs, target: target?.carbs ?? 0 },
   ];
+  const todayDate = new Intl.DateTimeFormat("uk-UA", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
+  const microcopyOptions = ["Маленькі перемоги щодня 🌿", "Ти чудово справляєшся", "Ще один хороший день"];
+  const microcopy = microcopyOptions[new Date().getDate() % microcopyOptions.length];
+
+  function toggleMeal(mealType: MealType) {
+    setCollapsedMeals((current) => (current.includes(mealType) ? current.filter((item) => item !== mealType) : [...current, mealType]));
+  }
+
+  async function handleRepeatYesterday() {
+    const count = await duplicateYesterday();
+    setRepeatMessage(count ? `Додано ${count} записів з учора.` : "Учора ще не було записів.");
+  }
+
+  async function handleRepeatMeal(mealType: MealType) {
+    const count = await duplicateMeal(mealType);
+    setRepeatMessage(count ? `Повторено: ${mealTypeLabels[mealType].toLocaleLowerCase("uk")}.` : "У цій групі поки немає записів.");
+  }
+
   return (
     <section className="screen dashboard-screen">
       <header className="home-header">
         <div>
           <p>Привіт 🌿</p>
           <h1>Small Wins</h1>
-          <span>Твої маленькі перемоги сьогодні</span>
+          <span>
+            {todayDate} · {microcopy}
+          </span>
         </div>
       </header>
+
+      <div className="quick-actions-strip">
+        <button type="button" onClick={() => setIsQuickAddOpen(true)}>
+          Швидко додати
+        </button>
+        <button type="button" onClick={() => void handleRepeatYesterday()}>
+          Як учора
+        </button>
+      </div>
+      {repeatMessage ? <p className="soft-feedback">{repeatMessage}</p> : null}
 
       <article className="card calories-card">
         <div className="calories-topline">
@@ -102,51 +142,64 @@ export function DashboardScreen() {
 
           return (
             <article key={mealType} className="meal-group">
-              <h3>{mealTypeLabels[mealType]}</h3>
-              <div className="entry-list">
-                {mealEntries.map((entry) => (
-                  <div key={entry.id} className="entry-row soft-card">
-                    <div>
-                      <strong>{entry.foodName}</strong>
-                      {editingEntryId === entry.id ? (
-                        <label className="inline-amount">
-                          <input
-                            defaultValue={entry.amount}
-                            type="number"
-                            inputMode="decimal"
-                            min="0"
-                            onBlur={(event) => {
-                              void updateMealEntryAmount(entry, Number(event.target.value));
-                              setEditingEntryId(null);
-                            }}
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter") {
-                                event.currentTarget.blur();
-                              }
-                            }}
-                            autoFocus
-                          />
-                          <span>{amountUnit(entry.servingType)}</span>
-                        </label>
-                      ) : (
-                        <button type="button" className="entry-meta" onClick={() => setEditingEntryId(entry.id ?? null)}>
-                          {formatAmount(entry.amount, entry.servingType)}
+              <button type="button" className="meal-group-header" onClick={() => toggleMeal(mealType)}>
+                <span>
+                  {mealTypeLabels[mealType]} — {Math.round(getTotals(mealEntries).calories)} ккал
+                </span>
+                <small>{collapsedMeals.includes(mealType) ? "Розгорнути" : "Згорнути"}</small>
+              </button>
+              {!collapsedMeals.includes(mealType) ? (
+                <div className="entry-list">
+                  {mealEntries.map((entry) => (
+                    <div key={entry.id} className="entry-row soft-card">
+                      <div>
+                        <strong>{entry.foodName}</strong>
+                        {editingEntryId === entry.id ? (
+                          <label className="inline-amount">
+                            <input
+                              defaultValue={entry.amount}
+                              type="number"
+                              inputMode="decimal"
+                              min="0"
+                              onBlur={(event) => {
+                                void updateMealEntryAmount(entry, Number(event.target.value));
+                                setEditingEntryId(null);
+                              }}
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                  event.currentTarget.blur();
+                                }
+                              }}
+                              autoFocus
+                            />
+                            <span>{amountUnit(entry.servingType)}</span>
+                          </label>
+                        ) : (
+                          <button type="button" className="entry-meta" onClick={() => setEditingEntryId(entry.id ?? null)}>
+                            {formatAmount(entry.amount, entry.servingType)}
+                          </button>
+                        )}
+                        <small>
+                          Б {formatNumber(entry.protein)} · Ж {formatNumber(entry.fat)} · В {formatNumber(entry.carbs)}
+                        </small>
+                      </div>
+                      <div className="entry-side">
+                        <strong>{Math.round(entry.calories)}</strong>
+                        <span>ккал</span>
+                        <button type="button" onClick={() => entry.id && void deleteMealEntry(entry.id)} aria-label={`Видалити ${entry.foodName}`}>
+                          ×
                         </button>
-                      )}
-                      <small>
-                        Б {formatNumber(entry.protein)} · Ж {formatNumber(entry.fat)} · В {formatNumber(entry.carbs)}
-                      </small>
+                        <button type="button" onClick={() => void duplicateMealEntry(entry)} aria-label={`Повторити ${entry.foodName}`}>
+                          ↻
+                        </button>
+                      </div>
                     </div>
-                    <div className="entry-side">
-                      <strong>{Math.round(entry.calories)}</strong>
-                      <span>ккал</span>
-                      <button type="button" onClick={() => entry.id && void deleteMealEntry(entry.id)} aria-label={`Видалити ${entry.foodName}`}>
-                        ×
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                  <button className="repeat-meal-button" type="button" onClick={() => void handleRepeatMeal(mealType)}>
+                    Повторити {mealTypeLabels[mealType].toLocaleLowerCase("uk")}
+                  </button>
+                </div>
+              ) : null}
             </article>
           );
         })}

@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import { createFood, updateFood, type FoodInput } from "@/lib/db/foods";
 import type { Food, ServingType } from "@/types/models";
 import { BottomSheet } from "@/components/ui/BottomSheet";
+import { NumericInput } from "@/components/ui/NumericInput";
 
 interface FoodFormSheetProps {
   food?: Food;
@@ -90,43 +91,19 @@ export function FoodFormSheet({ food, onClose }: FoodFormSheetProps) {
         <div className="form-grid">
           <label className="form-field">
             <span>Калорії</span>
-            <input
-              value={Number.isNaN(form.calories) ? "" : form.calories}
-              onChange={(event) => updateField("calories", event.target.value)}
-              inputMode="decimal"
-              min="0"
-              type="number"
-            />
+            <NumericInput value={form.calories} onValueChange={(value) => updateField("calories", String(value))} />
           </label>
           <label className="form-field">
             <span>Білки</span>
-            <input
-              value={Number.isNaN(form.protein) ? "" : form.protein}
-              onChange={(event) => updateField("protein", event.target.value)}
-              inputMode="decimal"
-              min="0"
-              type="number"
-            />
+            <NumericInput value={form.protein} onValueChange={(value) => updateField("protein", String(value))} />
           </label>
           <label className="form-field">
             <span>Жири</span>
-            <input
-              value={Number.isNaN(form.fat) ? "" : form.fat}
-              onChange={(event) => updateField("fat", event.target.value)}
-              inputMode="decimal"
-              min="0"
-              type="number"
-            />
+            <NumericInput value={form.fat} onValueChange={(value) => updateField("fat", String(value))} />
           </label>
           <label className="form-field">
             <span>Вуглеводи</span>
-            <input
-              value={Number.isNaN(form.carbs) ? "" : form.carbs}
-              onChange={(event) => updateField("carbs", event.target.value)}
-              inputMode="decimal"
-              min="0"
-              type="number"
-            />
+            <NumericInput value={form.carbs} onValueChange={(value) => updateField("carbs", String(value))} />
           </label>
         </div>
 

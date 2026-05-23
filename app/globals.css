@@ -699,8 +699,10 @@ button:disabled {
 .quick-chip-card {
   display: grid;
   min-width: 132px;
-  min-height: 82px;
+  min-height: 96px;
   align-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
   border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
   border-radius: 22px;
   color: var(--text);
@@ -710,10 +712,15 @@ button:disabled {
   text-align: left;
 }
 
+.quick-chip-card strong {
+  line-height: 1.12;
+}
+
 .quick-chip-card span {
   color: var(--muted);
   font-size: 0.8rem;
   font-weight: 800;
+  line-height: 1;
 }
 
 .quick-food-option {

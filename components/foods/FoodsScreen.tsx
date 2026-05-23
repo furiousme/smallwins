@@ -25,46 +25,48 @@ export function FoodsScreen() {
   }, [foods, query]);
 
   return (
-    <section className="screen foods-screen">
-      <header className="section-header">
-        <p>Бібліотека</p>
-        <h1>Мої страви</h1>
-      </header>
+    <>
+      <section className="screen foods-screen">
+        <header className="section-header">
+          <p>Бібліотека</p>
+          <h1>Мої страви</h1>
+        </header>
 
-      <label className="search-field">
-        <span className="sr-only">Пошук страв</span>
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Пошук страви" type="search" />
-      </label>
+        <label className="search-field">
+          <span className="sr-only">Пошук страв</span>
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Пошук страви" type="search" />
+        </label>
 
-      {isLoading ? <p className="muted">Завантаження...</p> : null}
+        {isLoading ? <p className="muted">Завантаження...</p> : null}
 
-      {!isLoading && filteredFoods.length === 0 ? (
-        <article className="card empty-state">
-          <div className="empty-icon" aria-hidden="true">
-            +
-          </div>
-          <h2>{query ? "Нічого не знайшлось" : "Тут з’являться твої улюблені страви 🌿"}</h2>
-          <p>{query ? "Спробуй іншу назву або додай страву вручну." : "Додай кілька базових продуктів, і щоденне логування стане швидким."}</p>
-        </article>
-      ) : null}
-
-      <div className="food-list">
-        {filteredFoods.map((food) => (
-          <button key={food.id} type="button" className="soft-card food-card food-card-button" onClick={() => setSelectedFood(food)}>
-            <div>
-              <h2>{food.name}</h2>
-              <span>
-                {servingTypeLabel(food.servingType)}
-                {(food.usageCount ?? 0) > 0 ? ` · ${food.usageCount} разів` : ""}
-              </span>
+        {!isLoading && filteredFoods.length === 0 ? (
+          <article className="card empty-state">
+            <div className="empty-icon" aria-hidden="true">
+              +
             </div>
-            <strong>{food.calories} ккал</strong>
-            <p>
-              Б {food.protein} г · Ж {food.fat} г · В {food.carbs} г
-            </p>
-          </button>
-        ))}
-      </div>
+            <h2>{query ? "Нічого не знайшлось" : "Тут з’являться твої улюблені страви 🌿"}</h2>
+            <p>{query ? "Спробуй іншу назву або додай страву вручну." : "Додай кілька базових продуктів, і щоденне логування стане швидким."}</p>
+          </article>
+        ) : null}
+
+        <div className="food-list">
+          {filteredFoods.map((food) => (
+            <button key={food.id} type="button" className="soft-card food-card food-card-button" onClick={() => setSelectedFood(food)}>
+              <div>
+                <h2>{food.name}</h2>
+                <span>
+                  {servingTypeLabel(food.servingType)}
+                  {(food.usageCount ?? 0) > 0 ? ` · ${food.usageCount} разів` : ""}
+                </span>
+              </div>
+              <strong>{food.calories} ккал</strong>
+              <p>
+                Б {food.protein} г · Ж {food.fat} г · В {food.carbs} г
+              </p>
+            </button>
+          ))}
+        </div>
+      </section>
 
       <button className="fab-button" type="button" onClick={() => setIsCreating(true)} aria-label="Додати страву">
         +
@@ -72,6 +74,6 @@ export function FoodsScreen() {
 
       {isCreating ? <FoodFormSheet onClose={() => setIsCreating(false)} /> : null}
       {selectedFood ? <FoodDetailsSheet food={selectedFood} onClose={() => setSelectedFood(null)} /> : null}
-    </section>
+    </>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
+import { NumericInput } from "@/components/ui/NumericInput";
 import { createMealEntry, getRecentFoods } from "@/lib/db/mealEntries";
 import { getFoods, getFrequentFoods } from "@/lib/db/foods";
 import { amountUnit, mealTypeLabels, servingTypeLabel } from "@/lib/nutrition/format";
@@ -46,7 +47,7 @@ export function QuickAddSheet({ onClose }: QuickAddSheetProps) {
   }
 
   async function handleAdd() {
-    if (!selectedFood || amount <= 0) {
+    if (!selectedFood || !Number.isFinite(amount) || amount <= 0) {
       return;
     }
 
@@ -129,13 +130,7 @@ export function QuickAddSheet({ onClose }: QuickAddSheetProps) {
 
           <label className="form-field">
             <span>Кількість, {amountUnit(selectedFood.servingType)}</span>
-            <input
-              value={amount}
-              onChange={(event) => setAmount(Math.max(0, Number(event.target.value)))}
-              inputMode="decimal"
-              min="0"
-              type="number"
-            />
+            <NumericInput value={amount} onValueChange={(value) => setAmount(Number.isFinite(value) ? Math.max(0, value) : value)} />
           </label>
 
           <div className="amount-chips">
@@ -158,7 +153,7 @@ export function QuickAddSheet({ onClose }: QuickAddSheetProps) {
             <button className="secondary-button" type="button" onClick={() => setSelectedFood(null)}>
               Назад
             </button>
-            <button className="primary-button" type="button" onClick={() => void handleAdd()} disabled={isSaving || amount <= 0}>
+            <button className="primary-button" type="button" onClick={() => void handleAdd()} disabled={isSaving || !Number.isFinite(amount) || amount <= 0}>
               {isSaving ? "Додавання..." : "Додати"}
             </button>
           </div>

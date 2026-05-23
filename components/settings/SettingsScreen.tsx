@@ -6,6 +6,7 @@ import { themes } from "@/lib/themes/config";
 import { exportLocalData, importLocalData } from "@/lib/db/backup";
 import { getDailyTarget, upsertDailyTarget } from "@/lib/db/targets";
 import { useDexieLiveQuery } from "@/lib/hooks/useDexieLiveQuery";
+import { NumericInput } from "@/components/ui/NumericInput";
 
 interface SettingsScreenProps {
   themeId: string;
@@ -126,43 +127,19 @@ export function SettingsScreen({ themeId, onThemeChange, onLogout }: SettingsScr
           <div className="form-grid">
             <label className="form-field">
               <span>Калорії</span>
-              <input
-                value={targetForm.calories}
-                onChange={(event) => updateTargetField("calories", event.target.value)}
-                type="number"
-                inputMode="decimal"
-                min="0"
-              />
+              <NumericInput value={targetForm.calories} onValueChange={(value) => updateTargetField("calories", String(value))} />
             </label>
             <label className="form-field">
               <span>Білки</span>
-              <input
-                value={targetForm.protein}
-                onChange={(event) => updateTargetField("protein", event.target.value)}
-                type="number"
-                inputMode="decimal"
-                min="0"
-              />
+              <NumericInput value={targetForm.protein} onValueChange={(value) => updateTargetField("protein", String(value))} />
             </label>
             <label className="form-field">
               <span>Жири</span>
-              <input
-                value={targetForm.fat}
-                onChange={(event) => updateTargetField("fat", event.target.value)}
-                type="number"
-                inputMode="decimal"
-                min="0"
-              />
+              <NumericInput value={targetForm.fat} onValueChange={(value) => updateTargetField("fat", String(value))} />
             </label>
             <label className="form-field">
               <span>Вуглеводи</span>
-              <input
-                value={targetForm.carbs}
-                onChange={(event) => updateTargetField("carbs", event.target.value)}
-                type="number"
-                inputMode="decimal"
-                min="0"
-              />
+              <NumericInput value={targetForm.carbs} onValueChange={(value) => updateTargetField("carbs", String(value))} />
             </label>
           </div>
           <button className="primary-button compact-button" type="submit">

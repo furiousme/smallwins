@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { QuickAddSheet } from "@/components/dashboard/QuickAddSheet";
+import { NumericInput } from "@/components/ui/NumericInput";
 import {
   deleteMealEntry,
   duplicateMeal,
@@ -19,6 +20,7 @@ import type { MealEntry, MealType } from "@/types/models";
 export function DashboardScreen() {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [editingEntryId, setEditingEntryId] = useState<number | null>(null);
+  const [editingAmount, setEditingAmount] = useState(0);
   const [collapsedMeals, setCollapsedMeals] = useState<MealType[]>([]);
   const [repeatMessage, setRepeatMessage] = useState("");
   const entriesQuery = useCallback(() => getTodayEntries(), []);
@@ -156,26 +158,31 @@ export function DashboardScreen() {
                         <strong>{entry.foodName}</strong>
                         {editingEntryId === entry.id ? (
                           <label className="inline-amount">
-                            <input
-                              defaultValue={entry.amount}
-                              type="number"
-                              inputMode="decimal"
-                              min="0"
-                              onBlur={(event) => {
-                                void updateMealEntryAmount(entry, Number(event.target.value));
-                                setEditingEntryId(null);
-                              }}
+                            <NumericInput
+                              value={editingAmount}
+                              autoFocus
+                              onValueChange={setEditingAmount}
                               onKeyDown={(event) => {
                                 if (event.key === "Enter") {
                                   event.currentTarget.blur();
                                 }
                               }}
-                              autoFocus
+                              onBlur={() => {
+                                void updateMealEntryAmount(entry, Number.isFinite(editingAmount) ? editingAmount : 0);
+                                setEditingEntryId(null);
+                              }}
                             />
                             <span>{amountUnit(entry.servingType)}</span>
                           </label>
                         ) : (
-                          <button type="button" className="entry-meta" onClick={() => setEditingEntryId(entry.id ?? null)}>
+                        <button
+                          type="button"
+                          className="entry-meta"
+                          onClick={() => {
+                            setEditingAmount(entry.amount);
+                            setEditingEntryId(entry.id ?? null);
+                          }}
+                        >
                             {formatAmount(entry.amount, entry.servingType)}
                           </button>
                         )}

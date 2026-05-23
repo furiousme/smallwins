@@ -1,0 +1,549 @@
+:root {
+  --background: #f7f4ed;
+  --surface: #fffaf3;
+  --surface-strong: #ffffff;
+  --text: #26342d;
+  --muted: #718174;
+  --primary: #8fae9b;
+  --primary-strong: #5e866e;
+  --accent: #e7b98a;
+  --danger: #c86b62;
+  --ring: rgba(94, 134, 110, 0.2);
+  --shadow: 0 18px 48px rgba(59, 74, 62, 0.12);
+  --nav-height: 84px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--background);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 30%, transparent), transparent 38%),
+    linear-gradient(180deg, color-mix(in srgb, var(--background) 92%, white), var(--background));
+  font-family: ui-rounded, "SF Pro Rounded", "SF Pro Display", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: max(18px, env(safe-area-inset-top)) 18px calc(var(--nav-height) + env(safe-area-inset-bottom) + 18px);
+}
+
+.screen {
+  width: min(100%, 560px);
+  margin: 0 auto;
+  animation: rise-in 460ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.stack {
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--surface) 92%, white);
+  box-shadow: var(--shadow);
+}
+
+.soft-card {
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--surface) 82%, white);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.primary-button {
+  display: inline-flex;
+  min-height: 58px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  color: white;
+  background: linear-gradient(135deg, var(--primary-strong), var(--primary));
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--primary) 36%, transparent);
+  cursor: pointer;
+  font-weight: 750;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.primary-button:active,
+.secondary-button:active {
+  transform: scale(0.98);
+}
+
+.secondary-button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  border-radius: 999px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface) 90%, white);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.loading-screen {
+  display: grid;
+  min-height: 72vh;
+  place-items: center;
+  align-content: center;
+  gap: 14px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.loading-mark {
+  width: 62px;
+  aspect-ratio: 1;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 34% 30%, var(--accent) 0 10px, transparent 11px),
+    radial-gradient(circle at 50% 56%, var(--surface) 0 20px, transparent 21px),
+    var(--primary);
+  box-shadow: var(--shadow);
+}
+
+.pin-screen {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: max(26px, env(safe-area-inset-top)) 22px max(24px, env(safe-area-inset-bottom));
+}
+
+.pin-panel {
+  width: min(100%, 420px);
+  text-align: center;
+  animation: rise-in 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.pin-copy {
+  margin-bottom: 30px;
+}
+
+.pin-kicker,
+.home-header p,
+.placeholder-screen header p,
+.settings-screen header p {
+  margin: 0 0 8px;
+  color: var(--primary-strong);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.pin-copy h1,
+.home-header h1,
+.placeholder-screen h1,
+.settings-screen h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: 2.35rem;
+  line-height: 1;
+}
+
+.pin-copy p:not(.pin-kicker) {
+  max-width: 310px;
+  margin: 14px auto 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.pin-dots {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  min-height: 18px;
+}
+
+.pin-dots.shake {
+  animation: shake 420ms ease;
+}
+
+.pin-dots span {
+  width: 14px;
+  aspect-ratio: 1;
+  border: 1.5px solid color-mix(in srgb, var(--primary-strong) 52%, transparent);
+  border-radius: 50%;
+  background: transparent;
+  transition:
+    transform 140ms ease,
+    background 140ms ease;
+}
+
+.pin-dots span.filled {
+  background: var(--primary-strong);
+  transform: scale(1.08);
+}
+
+.pin-error {
+  min-height: 24px;
+  margin: 14px 0 24px;
+  color: var(--danger);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(74px, 1fr));
+  gap: 14px;
+  width: min(100%, 326px);
+  margin: 0 auto;
+}
+
+.keypad-button,
+.keypad-action {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.keypad-button {
+  background: color-mix(in srgb, var(--surface-strong) 88%, transparent);
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--primary) 18%, transparent);
+  font-size: 2rem;
+  font-weight: 650;
+}
+
+.keypad-action {
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.6rem;
+}
+
+.keypad-button:active,
+.keypad-action:active {
+  transform: scale(0.94);
+}
+
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 2px 2px;
+}
+
+.home-header span,
+.placeholder-screen header,
+.settings-screen header {
+  color: var(--muted);
+}
+
+.home-header span {
+  display: block;
+  margin-top: 8px;
+  font-weight: 650;
+}
+
+.dashboard-screen,
+.settings-screen,
+.placeholder-screen {
+  display: grid;
+  gap: 16px;
+}
+
+.calories-card {
+  display: grid;
+  gap: 22px;
+  padding: 24px;
+}
+
+.calories-topline,
+.calories-summary,
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.calories-topline span {
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.calories-topline strong {
+  font-size: 1.05rem;
+}
+
+.calories-progress {
+  height: 18px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 16%, white);
+}
+
+.calories-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary-strong), var(--accent));
+}
+
+.calories-summary div {
+  display: grid;
+  gap: 4px;
+}
+
+.calories-summary div:last-child {
+  text-align: right;
+}
+
+.calories-summary strong {
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.calories-summary span,
+.macro-card span,
+.macro-card small,
+.day-note span,
+.section-heading span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.macro-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.macro-card {
+  display: grid;
+  min-height: 118px;
+  align-content: space-between;
+  padding: 16px;
+}
+
+.macro-card strong {
+  font-size: 1.28rem;
+  line-height: 1;
+}
+
+.day-note {
+  padding: 18px;
+}
+
+.day-note p,
+.settings-section p,
+.empty-state p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.empty-state {
+  display: grid;
+  min-height: 340px;
+  place-items: center;
+  align-content: center;
+  padding: 28px;
+  text-align: center;
+}
+
+.empty-icon {
+  display: grid;
+  width: 72px;
+  aspect-ratio: 1;
+  place-items: center;
+  margin-bottom: 18px;
+  border-radius: 24px;
+  color: white;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  font-size: 2.2rem;
+  font-weight: 500;
+}
+
+.empty-state h2 {
+  margin: 0;
+  font-size: 1.45rem;
+}
+
+.settings-section {
+  padding: 20px;
+}
+
+.settings-section.compact {
+  box-shadow: none;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 1.12rem;
+}
+
+.theme-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.theme-option {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  min-height: 58px;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid color-mix(in srgb, var(--primary) 14%, transparent);
+  border-radius: 18px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface-strong) 82%, transparent);
+  cursor: pointer;
+  text-align: left;
+}
+
+.theme-option.active {
+  border-color: color-mix(in srgb, var(--primary-strong) 42%, transparent);
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+.theme-swatch {
+  width: 26px;
+  aspect-ratio: 1;
+  justify-self: end;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.56);
+}
+
+.theme-option span:not(.theme-swatch) {
+  font-weight: 800;
+}
+
+.theme-option small {
+  padding-right: 12px;
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.logout-button {
+  width: 100%;
+  color: var(--danger);
+}
+
+.bottom-nav {
+  position: fixed;
+  right: 14px;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: 14px;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: min(calc(100% - 28px), 540px);
+  height: 72px;
+  margin: 0 auto;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--surface) 86%, white);
+  box-shadow: 0 18px 44px rgba(43, 48, 38, 0.14);
+  backdrop-filter: blur(18px);
+}
+
+.bottom-nav button {
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  border: 0;
+  border-radius: 20px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.bottom-nav button span {
+  font-size: 1.18rem;
+  line-height: 1;
+}
+
+.bottom-nav button.active {
+  color: var(--primary-strong);
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes shake {
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+
+  20%,
+  80% {
+    transform: translateX(3px);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translateX(-5px);
+  }
+
+  40%,
+  60% {
+    transform: translateX(5px);
+  }
+}
+
+@media (min-width: 720px) {
+  .app-shell {
+    padding-top: 32px;
+  }
+}

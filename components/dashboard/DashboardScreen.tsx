@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { QuickAddSheet } from "@/components/dashboard/QuickAddSheet";
+import { QuoteCard } from "@/components/dashboard/QuoteCard";
 import { NumericInput } from "@/components/ui/NumericInput";
 import {
   deleteMealEntry,
@@ -74,6 +75,8 @@ export function DashboardScreen() {
           </span>
         </div>
       </header>
+
+      <QuoteCard />
 
       <div className="quick-actions-strip">
         <button type="button" onClick={() => setIsQuickAddOpen(true)}>

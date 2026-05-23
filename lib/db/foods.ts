@@ -11,10 +11,23 @@ export interface FoodInput {
   servingType: ServingType;
 }
 
+function normalizeFoodName(name: string) {
+  const trimmedName = name.trim();
+  const firstLetterIndex = trimmedName.search(/\p{L}/u);
+
+  if (firstLetterIndex === -1) {
+    return trimmedName;
+  }
+
+  return `${trimmedName.slice(0, firstLetterIndex)}${trimmedName
+    .charAt(firstLetterIndex)
+    .toLocaleUpperCase("uk")}${trimmedName.slice(firstLetterIndex + 1)}`;
+}
+
 function normalizeFoodInput(input: FoodInput): FoodInput {
   return {
     ...input,
-    name: input.name.trim(),
+    name: normalizeFoodName(input.name),
     calories: Math.max(0, input.calories),
     protein: Math.max(0, input.protein),
     fat: Math.max(0, input.fat),

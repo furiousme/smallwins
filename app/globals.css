@@ -397,7 +397,8 @@ button:disabled {
   height: 18px;
   overflow: hidden;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--primary) 16%, white);
+  background: color-mix(in srgb, var(--surface-strong) 62%, white);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 12%, transparent);
 }
 
 .calories-progress span {
@@ -454,7 +455,8 @@ button:disabled {
   height: 6px;
   overflow: hidden;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--primary) 12%, white);
+  background: color-mix(in srgb, var(--surface-strong) 64%, white);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent);
 }
 
 .mini-progress i {
@@ -716,7 +718,8 @@ button:disabled {
   overflow: hidden;
   height: 10px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--primary) 10%, white);
+  background: color-mix(in srgb, var(--surface-strong) 64%, white);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent);
 }
 
 .weekly-macro-meter i {
@@ -1289,16 +1292,6 @@ button:disabled {
   background: color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
-.repeat-meal-button {
-  min-height: 42px;
-  border: 1px dashed color-mix(in srgb, var(--primary) 28%, transparent);
-  border-radius: 18px;
-  color: var(--primary-strong);
-  background: color-mix(in srgb, var(--surface) 80%, transparent);
-  cursor: pointer;
-  font-weight: 850;
-}
-
 .quick-actions-strip {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1416,15 +1409,20 @@ button:disabled {
 
 .theme-preview-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
   gap: 10px;
+  max-height: 344px;
   margin-top: 16px;
+  padding-right: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
 .theme-preview {
   display: grid;
-  min-height: 116px;
-  gap: 10px;
+  min-height: 98px;
+  gap: 8px;
   align-content: start;
   border: 1px solid color-mix(in srgb, var(--primary) 14%, transparent);
   border-radius: 22px;
@@ -1441,12 +1439,12 @@ button:disabled {
 
 .theme-preview-top {
   display: block;
-  height: 36px;
-  border-radius: 16px;
+  height: 30px;
+  border-radius: 14px;
 }
 
 .theme-preview span:not(.theme-preview-top) {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 850;
 }
 
@@ -1571,6 +1569,11 @@ button:disabled {
   font: inherit;
   font-size: 0.86rem;
   font-weight: 850;
+}
+
+.reminder-time-list input::-webkit-calendar-picker-indicator {
+  opacity: 0.72;
+  filter: invert(84%) sepia(14%) saturate(314%) hue-rotate(126deg) brightness(102%) contrast(88%);
 }
 
 .app-info p {

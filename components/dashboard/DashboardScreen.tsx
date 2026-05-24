@@ -7,7 +7,6 @@ import { ProteinAwarenessCard } from "@/components/dashboard/ProteinAwarenessCar
 import { NumericInput } from "@/components/ui/NumericInput";
 import {
   deleteMealEntry,
-  duplicateMeal,
   duplicateMealEntry,
   duplicateYesterday,
   getTodayEntries,
@@ -70,12 +69,6 @@ export function DashboardScreen() {
   async function handleRepeatYesterday() {
     const count = await duplicateYesterday();
     setRepeatMessage(count ? `Додано ${count} записів з учора.` : "Учора ще не було записів.");
-  }
-
-  async function handleRepeatMeal(mealType: MealType) {
-    const count = await duplicateMeal(mealType);
-    setExpandedMeal(mealType);
-    setRepeatMessage(count ? `Повторено: ${mealTypeLabels[mealType].toLocaleLowerCase("uk")}.` : "У цій групі поки немає записів.");
   }
 
   return (
@@ -224,9 +217,6 @@ export function DashboardScreen() {
                       </div>
                     </div>
                   ))}
-                  <button className="repeat-meal-button" type="button" onClick={() => void handleRepeatMeal(mealType)}>
-                    Повторити {mealTypeLabels[mealType].toLocaleLowerCase("uk")}
-                  </button>
                 </div>
               ) : null}
             </article>

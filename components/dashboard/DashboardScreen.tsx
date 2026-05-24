@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { QuickAddSheet } from "@/components/dashboard/QuickAddSheet";
 import { QuoteCard } from "@/components/dashboard/QuoteCard";
 import { ProteinAwarenessCard } from "@/components/dashboard/ProteinAwarenessCard";
@@ -15,7 +15,7 @@ import {
   updateMealEntryAmount,
 } from "@/lib/db/mealEntries";
 import { getDailyTarget } from "@/lib/db/targets";
-import { amountUnit, clampPercent, formatAmount, formatMacro, formatNumber, mealTypeLabels, visibleMealTypes } from "@/lib/nutrition/format";
+import { amountUnit, clampPercent, formatAmount, formatMacro, formatNumber, formatPercent, mealTypeLabels, visibleMealTypes } from "@/lib/nutrition/format";
 import { useDexieLiveQuery } from "@/lib/hooks/useDexieLiveQuery";
 import type { MealEntry, MealType } from "@/types/models";
 
@@ -23,8 +23,9 @@ export function DashboardScreen() {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [editingEntryId, setEditingEntryId] = useState<number | null>(null);
   const [editingAmount, setEditingAmount] = useState(0);
-  const [collapsedMeals, setCollapsedMeals] = useState<MealType[]>([]);
+  const [expandedMeal, setExpandedMeal] = useState<MealType | null>(null);
   const [repeatMessage, setRepeatMessage] = useState("");
+  const lastEntrySignatureRef = useRef<string | null>(null);
   const entriesQuery = useCallback(() => getTodayEntries(), []);
   const targetQuery = useCallback(() => getDailyTarget(), []);
   const { value: entries } = useDexieLiveQuery(entriesQuery, []);
@@ -40,19 +41,30 @@ export function DashboardScreen() {
     );
   }, [entries]);
   const calorieTarget = target?.calories ?? 0;
-  const caloriePercent = calorieTarget ? clampPercent((totals.calories / calorieTarget) * 100) : 0;
+  const caloriePercent = calorieTarget ? (totals.calories / calorieTarget) * 100 : 0;
   const caloriesLeft = calorieTarget ? Math.max(0, calorieTarget - totals.calories) : 0;
   const macros = [
-    { label: "Білки", value: totals.protein, target: target?.protein ?? 0 },
-    { label: "Жири", value: totals.fat, target: target?.fat ?? 0 },
-    { label: "Вуглеводи", value: totals.carbs, target: target?.carbs ?? 0 },
+    { label: "Білки", value: totals.protein, target: target?.protein ?? 0, percent: target?.protein ? (totals.protein / target.protein) * 100 : 0 },
+    { label: "Жири", value: totals.fat, target: target?.fat ?? 0, percent: target?.fat ? (totals.fat / target.fat) * 100 : 0 },
+    { label: "Вуглеводи", value: totals.carbs, target: target?.carbs ?? 0, percent: target?.carbs ? (totals.carbs / target.carbs) * 100 : 0 },
   ];
   const todayDate = new Intl.DateTimeFormat("uk-UA", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
   const microcopyOptions = ["Маленькі перемоги щодня 🌿", "Ти чудово справляєшся", "Ще один хороший день"];
   const microcopy = microcopyOptions[new Date().getDate() % microcopyOptions.length];
 
+  useEffect(() => {
+    const latestEntry = entries[0];
+    const latestSignature = latestEntry ? `${latestEntry.id ?? "new"}-${latestEntry.createdAt}` : "";
+
+    if (lastEntrySignatureRef.current && latestSignature && latestSignature !== lastEntrySignatureRef.current) {
+      setExpandedMeal(latestEntry.mealType);
+    }
+
+    lastEntrySignatureRef.current = latestSignature;
+  }, [entries]);
+
   function toggleMeal(mealType: MealType) {
-    setCollapsedMeals((current) => (current.includes(mealType) ? current.filter((item) => item !== mealType) : [...current, mealType]));
+    setExpandedMeal((current) => (current === mealType ? null : mealType));
   }
 
   async function handleRepeatYesterday() {
@@ -62,6 +74,7 @@ export function DashboardScreen() {
 
   async function handleRepeatMeal(mealType: MealType) {
     const count = await duplicateMeal(mealType);
+    setExpandedMeal(mealType);
     setRepeatMessage(count ? `Повторено: ${mealTypeLabels[mealType].toLocaleLowerCase("uk")}.` : "У цій групі поки немає записів.");
   }
 
@@ -95,7 +108,7 @@ export function DashboardScreen() {
           <strong>{target ? `${Math.round(totals.calories)} / ${target.calories}` : `${Math.round(totals.calories)} ккал`}</strong>
         </div>
         <div className="calories-progress" aria-label="Прогрес калорій">
-          <span style={{ width: `${caloriePercent}%` }} />
+          <span style={{ width: `${clampPercent(caloriePercent)}%` }} />
         </div>
         <div className="calories-summary">
           <div>
@@ -103,7 +116,7 @@ export function DashboardScreen() {
             <span>{target ? "залишилось" : "ціль не задана"}</span>
           </div>
           <div>
-            <strong>{Math.round(caloriePercent)}%</strong>
+            <strong>{formatPercent(caloriePercent)}</strong>
             <span>плану</span>
           </div>
         </div>
@@ -114,9 +127,9 @@ export function DashboardScreen() {
           <article key={macro.label} className="soft-card macro-card">
             <span>{macro.label}</span>
             <strong>{formatMacro(macro.value)}</strong>
-            <small>{macro.target ? `${Math.round(clampPercent((macro.value / macro.target) * 100))}%` : "ціль не задана"}</small>
+            <small>{macro.target ? formatPercent(macro.percent) : "ціль не задана"}</small>
             <div className="mini-progress" aria-hidden="true">
-              <i style={{ width: `${macro.target ? clampPercent((macro.value / macro.target) * 100) : 0}%` }} />
+              <i style={{ width: `${macro.target ? clampPercent(macro.percent) : 0}%` }} />
             </div>
           </article>
         ))}
@@ -148,15 +161,17 @@ export function DashboardScreen() {
             return null;
           }
 
+          const isExpanded = expandedMeal === mealType;
+
           return (
             <article key={mealType} className="meal-group">
               <button type="button" className="meal-group-header" onClick={() => toggleMeal(mealType)}>
                 <span>
                   {mealTypeLabels[mealType]} — {Math.round(getTotals(mealEntries).calories)} ккал
                 </span>
-                <small>{collapsedMeals.includes(mealType) ? "Розгорнути" : "Згорнути"}</small>
+                <small>{isExpanded ? "Згорнути" : "Розгорнути"}</small>
               </button>
-              {!collapsedMeals.includes(mealType) ? (
+              {isExpanded ? (
                 <div className="entry-list">
                   {mealEntries.map((entry) => (
                     <div key={entry.id} className="entry-row soft-card">
@@ -175,6 +190,7 @@ export function DashboardScreen() {
                               }}
                               onBlur={() => {
                                 void updateMealEntryAmount(entry, Number.isFinite(editingAmount) ? editingAmount : 0);
+                                setExpandedMeal(entry.mealType);
                                 setEditingEntryId(null);
                               }}
                             />

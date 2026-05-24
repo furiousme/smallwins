@@ -5,6 +5,7 @@ import { AuthGate } from "@/components/auth/AuthGate";
 import { BottomNavigation, type AppTab } from "@/components/layout/BottomNavigation";
 import { DashboardScreen } from "@/components/dashboard/DashboardScreen";
 import { FoodsScreen } from "@/components/foods/FoodsScreen";
+import { ProgressScreen } from "@/components/progress/ProgressScreen";
 import { SettingsScreen } from "@/components/settings/SettingsScreen";
 import { ReminderScheduler } from "@/components/reminders/ReminderScheduler";
 import { createAuthSession, getValidAuthSession, clearAuthSession } from "@/lib/auth/session";
@@ -91,6 +92,7 @@ export function SmallWinsApp() {
       <ReminderScheduler />
       {activeTab === "today" ? <DashboardScreen /> : null}
       {activeTab === "foods" ? <FoodsScreen /> : null}
+      {activeTab === "progress" ? <ProgressScreen /> : null}
       {activeTab === "settings" ? (
         <SettingsScreen themeId={themeId} onThemeChange={handleThemeChange} onLogout={handleLogout} />
       ) : null}

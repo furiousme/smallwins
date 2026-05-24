@@ -105,6 +105,11 @@ export const fallbackStorage = {
       .filter((entry) => entry.date === date)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   },
+  getEntriesBetween(startDate: string, endDate: string) {
+    return readJson<MealEntry[]>(keys.entries, [])
+      .filter((entry) => entry.date >= startDate && entry.date <= endDate)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
   createEntry(food: Food, amount: number, mealType: MealType, date = todayKey()) {
     const entries = readJson<MealEntry[]>(keys.entries, []);
     const totals = calculateEntryNutrition(food, amount);

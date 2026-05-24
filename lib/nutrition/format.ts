@@ -37,3 +37,11 @@ export function clampPercent(value: number) {
 
   return Math.max(0, Math.min(100, value));
 }
+
+export function formatPercent(value: number) {
+  if (!Number.isFinite(value)) {
+    return "0%";
+  }
+
+  return `${Math.round(value)}%`;
+}

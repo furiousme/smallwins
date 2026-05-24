@@ -1,6 +1,6 @@
 "use client";
 
-export type AppTab = "today" | "foods" | "settings";
+export type AppTab = "today" | "foods" | "progress" | "settings";
 
 interface BottomNavigationProps {
   activeTab: AppTab;
@@ -10,6 +10,7 @@ interface BottomNavigationProps {
 const tabs: Array<{ id: AppTab; label: string; icon: string }> = [
   { id: "today", label: "Сьогодні", icon: "◐" },
   { id: "foods", label: "Страви", icon: "＋" },
+  { id: "progress", label: "Прогрес", icon: "⌁" },
   { id: "settings", label: "Налаштування", icon: "⌘" },
 ];
 

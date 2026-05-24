@@ -1027,6 +1027,18 @@ button:disabled {
   font-weight: 800;
 }
 
+.sheet-helper {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+  border-radius: 18px;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--primary) 7%, transparent);
+  font-size: 0.86rem;
+  font-weight: 720;
+  line-height: 1.4;
+}
+
 .segmented-control {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

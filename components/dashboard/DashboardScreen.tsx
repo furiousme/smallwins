@@ -20,6 +20,7 @@ import type { MealEntry, MealType } from "@/types/models";
 
 export function DashboardScreen() {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [quickAddMode, setQuickAddMode] = useState<"foods" | "manual">("foods");
   const [editingEntryId, setEditingEntryId] = useState<number | null>(null);
   const [editingAmount, setEditingAmount] = useState(0);
   const [expandedMeal, setExpandedMeal] = useState<MealType | null>(null);
@@ -86,7 +87,13 @@ export function DashboardScreen() {
       <QuoteCard />
 
       <div className="quick-actions-strip">
-        <button type="button" onClick={() => setIsQuickAddOpen(true)}>
+        <button
+          type="button"
+          onClick={() => {
+            setQuickAddMode("manual");
+            setIsQuickAddOpen(true);
+          }}
+        >
           Швидко додати
         </button>
         <button type="button" onClick={() => void handleRepeatYesterday()}>
@@ -130,7 +137,14 @@ export function DashboardScreen() {
 
       <ProteinAwarenessCard totals={totals} target={target} />
 
-      <button className="primary-button" type="button" onClick={() => setIsQuickAddOpen(true)}>
+      <button
+        className="primary-button"
+        type="button"
+        onClick={() => {
+          setQuickAddMode("foods");
+          setIsQuickAddOpen(true);
+        }}
+      >
         + Додати їжу
       </button>
 
@@ -224,7 +238,7 @@ export function DashboardScreen() {
         })}
       </section>
 
-      {isQuickAddOpen ? <QuickAddSheet onClose={() => setIsQuickAddOpen(false)} /> : null}
+      {isQuickAddOpen ? <QuickAddSheet mode={quickAddMode} onClose={() => setIsQuickAddOpen(false)} /> : null}
     </section>
   );
 }

@@ -12,6 +12,16 @@ export interface MealEntryInput {
   date?: string;
 }
 
+export interface ManualMealEntryInput {
+  foodName?: string;
+  calories: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+  mealType: MealType;
+  date?: string;
+}
+
 export async function createMealEntry(input: MealEntryInput) {
   if (!hasIndexedDB()) {
     const id = fallbackStorage.createEntry(input.food, Math.max(0, input.amount), input.mealType, input.date);
@@ -42,6 +52,28 @@ export async function createMealEntry(input: MealEntryInput) {
   }
 
   return id;
+}
+
+export async function createManualMealEntry(input: ManualMealEntryInput) {
+  const entry: MealEntry = {
+    foodName: input.foodName?.trim() || "Швидкий запис",
+    amount: 1,
+    servingType: "per_piece",
+    mealType: input.mealType,
+    date: input.date ?? todayKey(),
+    calories: Math.max(0, input.calories),
+    protein: Math.max(0, input.protein),
+    fat: Math.max(0, input.fat),
+    carbs: Math.max(0, input.carbs),
+    createdAt: new Date().toISOString(),
+  };
+
+  if (!hasIndexedDB()) {
+    return fallbackStorage.addEntrySnapshot(entry);
+  }
+
+  const { db } = await import("@/lib/db/schema");
+  return db.mealEntries.add(entry);
 }
 
 export async function updateMealEntryAmount(entry: MealEntry, amount: number) {

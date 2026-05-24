@@ -18,12 +18,16 @@ function formatValue(value: number) {
 
 function normalizeEditingValue(value: string) {
   const normalized = value.replace(",", ".");
+  const numericValue = normalized.replace(/[^\d.]/g, "");
+  const [integerPart = "", ...decimalParts] = numericValue.split(".");
+  const decimalPart = decimalParts.join("");
+  const cleanedValue = decimalParts.length > 0 ? `${integerPart}.${decimalPart}` : integerPart;
 
-  if (/^0+\d/.test(normalized)) {
-    return normalized.replace(/^0+/, "");
+  if (/^0+\d/.test(cleanedValue)) {
+    return cleanedValue.replace(/^0+/, "");
   }
 
-  return normalized;
+  return cleanedValue;
 }
 
 function parseNumericValue(value: string, min = 0) {
